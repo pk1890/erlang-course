@@ -10,7 +10,7 @@
 -author("mleko").
 
 %% API
--export([lessThan/2, greatEqThan/2, qs/1, randomElems/3, compareSpeeds/3, mapp/2, filterr/2, mappp/2, sumList/1]).
+-export([lessThan/2, greatEqThan/2, qs/1, randomElems/3, compareSpeeds/3, mapp/2, filterr/2, mappp/2, sumList/1, fact/1]).
 
 lessThan(Val, Arr) -> lists:filter(fun (X) -> X < Val end, Arr).
 greatEqThan(Val, Arr) -> lists:filter(fun (X) -> X >= Val end, Arr).
@@ -32,3 +32,7 @@ filterr(P, Arr) -> [X || X <- Arr, P(X)].
 sumList(List) when is_list(List)-> lists:foldl(fun (X, Acc) -> X+Acc end, 0, List).
 
 %%sumDigit(N) ->  lists:foldl(fun (X, Sum) ->  end, 0, integer_to_list(N)).
+
+
+fact(0) -> 1;
+fact(X) when is_integer(X) -> X*fact(X-1).

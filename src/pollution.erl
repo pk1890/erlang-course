@@ -10,7 +10,7 @@
 -author("mleko").
 
 %% API
--export([addStation/3, createMonitor/0, isCoordUsed/2, getStation/2, addValue/5, removeValue/4, getOneValue/4, getStationMean/3]).
+-export([addStation/3, createMonitor/0, isCoordUsed/2, getStation/2, addValue/5, removeValue/4, getOneValue/4, getStationMean/3, getDailyMean/3, getDailyOverLimit/4]).
 
 
 
@@ -36,7 +36,7 @@ isCoordUsed(Coord, Monitor) ->
     false,
     lists:map(fun (Elem) -> cmpCoord(maps:get(coord, Elem), Coord) end, maps:values(Monitor))).
 
-getStation({Lat, Lon}, Monitor) -> maps:fold(fun (K, V, Acc) ->
+getStation({Lat, Lon}, Monitor) -> maps:fold(fun (_K, V, Acc) ->
                                                 case cmpCoord(maps:get(coord, V), {Lat, Lon}) of
                                                   true -> V;
                                                   _ -> Acc
@@ -77,3 +77,13 @@ getStationMean(Type, StationData, Monitor) ->
 
 %%getDailyMean/3 - zwraca średnią wartość parametru danego typu, danego dnia na wszystkich stacjach;
 
+getDailyMean(Type, {{CY, CM, CD},{_, _, _}}, Monitor) ->
+  Vals = lists:flatten(maps:values(maps:map(fun (_K, V) -> maps:values(maps:filter(fun ({{{Y, M, D},{_H, _M, _S}}, T}, _V) ->
+                                                     Type == T andalso CY == Y andalso CM == M andalso CD == D
+                                                  end, maps:get(measurements, V))) end, Monitor))),
+  lists:sum(Vals) / length(Vals).
+
+getDailyOverLimit({{CY, CM, CD},{_, _, _}}, Type, Limit, Monitor) ->
+  maps:size(maps:filter(fun (_K, Station) ->
+    map_size(maps:filter(fun ({{{Y, M, D},{_H, _M, _S}}, T}, Value) ->
+      Type == T andalso Value > Limit andalso CY == Y andalso CM == M andalso CD == D end, maps:get(measurements, Station))) > 0 end, Monitor)).
